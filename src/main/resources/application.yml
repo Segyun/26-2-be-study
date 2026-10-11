@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: 2026-2_GDGoC_BE_Study
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
