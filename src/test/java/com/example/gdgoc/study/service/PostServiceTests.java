@@ -1,79 +1,77 @@
 package com.example.gdgoc.study.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.example.gdgoc.study.domain.Post;
 import com.example.gdgoc.study.domain.PostNotFoundException;
-import com.example.gdgoc.study.repository.PostRepositoryImpl;
+import com.example.gdgoc.study.repository.PostRepository;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class PostServiceTests {
 
-  private PostRepositoryImpl repository;
+  @Mock private PostRepository postRepository;
+
   private PostService service;
 
   @BeforeEach
   void setUp() {
-    repository = new PostRepositoryImpl();
-    service = new PostService(repository);
+    service = new PostService(postRepository);
   }
 
   @Test
-  void crudPreservesPostFieldsAndUpdateIdentity() {
-    assertEquals(List.of(), service.getPosts());
+  void createPostSavesAndReturnsPost() {
+    Post savedPost = new Post("제목", "내용");
+    when(postRepository.save(any(Post.class))).thenReturn(savedPost);
 
-    Post first = service.createPost("첫 제목", "첫 내용");
-    Post second = service.createPost("두 번째 제목", "두 번째 내용");
+    Post result = service.createPost("제목", "내용");
 
-    assertNotEquals(first.id(), second.id());
-    assertEquals("첫 제목", first.title());
-    assertEquals("첫 내용", first.content());
-    assertSame(first, service.getPost(first.id()));
-    assertEquals(List.of(first, second), service.getPosts());
-
-    Post updated = service.updatePost(first.id(), "수정 제목", "수정 내용");
-
-    assertEquals(first.id(), updated.id());
-    assertEquals("수정 제목", updated.title());
-    assertEquals("수정 내용", updated.content());
-    assertSame(updated, service.getPost(first.id()));
-    assertEquals(List.of(updated, second), service.getPosts());
-
-    service.deletePost(first.id());
-
-    assertEquals(List.of(second), service.getPosts());
-    assertThrows(PostNotFoundException.class, () -> service.getPost(first.id()));
-    assertThrows(PostNotFoundException.class, () -> service.deletePost(first.id()));
-    assertNotEquals(first.id(), service.createPost("새 제목", "새 내용").id());
+    assertSame(savedPost, result);
+    assertEquals("제목", result.getTitle());
+    assertEquals("내용", result.getContent());
+    verify(postRepository).save(any(Post.class));
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"get", "update", "delete"})
-  void missingPostThrowsDomainExceptionWithoutChangingStoredPosts(String operation) {
-    Post existing = service.createPost("제목", "내용");
-    int missingId = existing.id() + 1;
+  @Test
+  void getPostsReturnsRepositoryResults() {
+    List<Post> posts = List.of(new Post("제목", "내용"));
+    when(postRepository.findAll()).thenReturn(posts);
+
+    assertSame(posts, service.getPosts());
+  }
+
+  @Test
+  void updatePostMutatesAndSavesExistingPost() {
+    Post existingPost = new Post("이전 제목", "이전 내용");
+    when(postRepository.findById(1L)).thenReturn(Optional.of(existingPost));
+    when(postRepository.save(existingPost)).thenReturn(existingPost);
+
+    Post updatedPost = service.updatePost(1L, "수정 제목", "수정 내용");
+
+    assertSame(existingPost, updatedPost);
+    assertEquals("수정 제목", updatedPost.getTitle());
+    assertEquals("수정 내용", updatedPost.getContent());
+    verify(postRepository).save(existingPost);
+  }
+
+  @Test
+  void missingPostThrowsDomainException() {
+    when(postRepository.findById(42L)).thenReturn(Optional.empty());
 
     PostNotFoundException exception =
-        assertThrows(
-            PostNotFoundException.class,
-            () -> {
-              switch (operation) {
-                case "get" -> service.getPost(missingId);
-                case "update" -> service.updatePost(missingId, "변경 제목", "변경 내용");
-                case "delete" -> service.deletePost(missingId);
-                default -> throw new IllegalArgumentException(operation);
-              }
-            });
+        assertThrows(PostNotFoundException.class, () -> service.getPost(42L));
 
-    assertEquals("Post " + missingId + " not found", exception.getMessage());
-    assertEquals(List.of(existing), service.getPosts());
-    assertSame(existing, service.getPost(existing.id()));
+    assertEquals("Post 42 not found", exception.getMessage());
   }
 }

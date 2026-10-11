@@ -39,22 +39,22 @@ public class PostController {
   }
 
   @GetMapping("/{id}")
-  public PostResponse getPost(@PathVariable int id) {
+  public PostResponse getPost(@PathVariable Long id) {
     return toResponse(postService.getPost(id));
   }
 
   @PutMapping("/{id}")
-  public PostResponse updatePost(@PathVariable int id, @RequestBody UpdatePostRequest request) {
+  public PostResponse updatePost(@PathVariable Long id, @RequestBody UpdatePostRequest request) {
     return toResponse(postService.updatePost(id, request.title(), request.content()));
   }
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deletePost(@PathVariable int id) {
+  public void deletePost(@PathVariable Long id) {
     postService.deletePost(id);
   }
 
   private PostResponse toResponse(Post post) {
-    return new PostResponse(post.id(), post.title(), post.content());
+    return new PostResponse(post.getId(), post.getTitle(), post.getContent());
   }
 }

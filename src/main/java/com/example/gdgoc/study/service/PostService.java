@@ -5,6 +5,7 @@ import com.example.gdgoc.study.domain.PostNotFoundException;
 import com.example.gdgoc.study.repository.PostRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PostService {
@@ -15,36 +16,34 @@ public class PostService {
     this.postRepository = postRepository;
   }
 
+  @Transactional
   public Post createPost(String title, String content) {
-    Post post = new Post(postRepository.nextId(), title, content);
-    postRepository.save(post);
-    return post;
+    return postRepository.save(new Post(title, content));
   }
 
+  @Transactional(readOnly = true)
   public List<Post> getPosts() {
     return postRepository.findAll();
   }
 
-  public Post getPost(int id) {
+  @Transactional(readOnly = true)
+  public Post getPost(Long id) {
     return findPost(id);
   }
 
-  public Post updatePost(int id, String title, String content) {
+  @Transactional
+  public Post updatePost(Long id, String title, String content) {
     Post existingPost = findPost(id);
-    Post post = new Post(existingPost.id(), title, content);
-    postRepository.save(post);
-    return post;
+    existingPost.update(title, content);
+    return postRepository.save(existingPost);
   }
 
-  public void deletePost(int id) {
+  @Transactional
+  public void deletePost(Long id) {
     postRepository.delete(findPost(id));
   }
 
-  private Post findPost(int id) {
-    Post post = postRepository.findById(id);
-    if (post == null) {
-      throw new PostNotFoundException(id);
-    }
-    return post;
+  private Post findPost(Long id) {
+    return postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id));
   }
 }
