@@ -389,6 +389,246 @@ Email: ioohyou@knu.ac.kr
 </details>
 </details>
 
+<details>
+<summary>2주차 과제</summary>
+
+<ul>
+<li>
+<details>
+<summary><b>초보반</b></summary>
+
+# 과제 2. 기존 프로젝트에 DB/JPA 적용하기
+
+## 1. 학습 목표와 완료 기준
+
+이번 과제에서는 새로운 프로젝트를 생성하지 않고, **1주차 과제에서 만든 게시글 CRUD REST API를 그대로 발전시킵니다.**
+
+1주차에서는 `List`, `Map` 등을 이용해 데이터를 메모리에 저장했다면,  
+2주차에서는 **Database와 Spring Data JPA를 적용하여 실제 DB에 게시글 데이터를 저장**합니다.
+
+- 기존 게시글 CRUD API 유지
+- DB 연결
+- JPA Entity 작성
+- Spring Data JPA Repository 적용
+- Entity / DTO 역할 고민
+- 존재하지 않는 데이터 처리
+- 예외 처리 흐름 고민
+
+<table>
+  <thead>
+    <tr>
+      <th>항목</th>
+      <th>기준</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>구현 스택</td>
+      <td>Spring Boot, Spring Data JPA</td>
+    </tr>
+    <tr>
+      <td>저장 방식</td>
+      <td>DB 사용</td>
+    </tr>
+    <tr>
+      <td>진행 방식</td>
+      <td>1주차 프로젝트를 새로 만들지 않고 이어서 발전시키기</td>
+    </tr>
+    <tr>
+      <td>필수 제출물</td>
+      <td>구현 코드, README</td>
+    </tr>
+    <tr>
+      <td>제출 기한</td>
+      <td>2026.10.16 23:59까지</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## 2. 과제 배경
+
+### Before
+
+1주차 과제에서는 게시글을 메모리에 저장했습니다.
+
+```text
+Controller
+    ↓
+Service
+    ↓
+List / Map
+```
+
+이 방식은 간단하게 CRUD 흐름을 이해하기에는 좋지만, 서버를 종료하면 저장된 데이터가 사라집니다.
+
+### After
+
+2주차 과제에서는 저장 방식을 DB로 변경합니다.
+
+```text
+Controller
+    ↓
+Service
+    ↓
+Repository
+    ↓
+Database
+```
+
+즉, 기존 CRUD 기능은 유지하면서 **데이터 저장 방식과 프로젝트 구조를 개선하는 것**이 핵심입니다.
+
+---
+
+## 3. 필수 구현
+
+다음 내용을 필수로 구현합니다.
+
+<table>
+  <thead>
+    <tr>
+      <th>구현 항목</th>
+      <th>설명</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>DB 연결</td>
+      <td>게시글 데이터를 저장할 Database를 연결합니다.</td>
+    </tr>
+    <tr>
+      <td>Post Entity 작성</td>
+      <td>JPA에서 관리할 게시글 Entity를 작성합니다.</td>
+    </tr>
+    <tr>
+      <td>Spring Data JPA 적용</td>
+      <td>JPA를 이용해 DB에 데이터를 저장하고 조회합니다.</td>
+    </tr>
+    <tr>
+      <td>Repository 작성</td>
+      <td>Spring Data JPA Repository를 이용해 데이터 접근 계층을 구성합니다.</td>
+    </tr>
+    <tr>
+      <td>게시글 등록</td>
+      <td>새로운 게시글을 DB에 저장합니다.</td>
+    </tr>
+    <tr>
+      <td>전체 조회</td>
+      <td>DB에 저장된 모든 게시글을 조회합니다.</td>
+    </tr>
+    <tr>
+      <td>단건 조회</td>
+      <td>특정 id에 해당하는 게시글을 조회합니다.</td>
+    </tr>
+    <tr>
+      <td>게시글 수정</td>
+      <td>기존 게시글의 제목과 내용을 수정합니다.</td>
+    </tr>
+    <tr>
+      <td>게시글 삭제</td>
+      <td>기존 게시글을 삭제합니다.</td>
+    </tr>
+    <tr>
+      <td>존재하지 않는 데이터 처리</td>
+      <td>없는 id로 조회, 수정, 삭제 요청이 들어왔을 때 적절히 처리합니다.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## 4. 직접 고민해볼 것
+
+구현하면서 다음 질문들을 함께 고민해보세요.
+
+- Entity와 DTO는 어떤 차이가 있을까?
+- Entity와 DTO를 분리해야 할까?
+- Entity를 Controller에서 그대로 반환해도 될까?
+- 존재하지 않는 데이터는 어떻게 처리할까?
+- Repository에서 조회한 데이터는 Service에서 어떻게 처리할까?
+- 수정 기능은 어떻게 구현하는 것이 좋을까?
+- 예외 처리는 어느 계층에서 담당하는 것이 좋을까?
+- DB를 사용하면 1주차의 메모리 저장 방식과 무엇이 달라질까?
+
+---
+
+## 5. 선택 Challenge
+
+필수 구현을 완료했다면 아래 내용 중 관심 있는 것을 선택해 추가로 구현해볼 수 있습니다.
+
+- `@Valid`를 이용한 Validation
+- `@RestControllerAdvice`
+- Custom Exception
+- API 테스트
+- Pagination
+- 검색 기능
+- Swagger
+- Docker를 이용한 DB 실행
+
+> Challenge는 모두 구현할 필요 없습니다.  
+> 기본 CRUD 기능을 DB/JPA 기반으로 정상 동작하게 만드는 것을 우선으로 진행해주세요.
+
+---
+
+## 6. 동작 확인
+
+Postman, IntelliJ HTTP Client 등 원하는 도구를 이용하여 다음 흐름이 정상적으로 동작하는지 확인합니다.
+
+```text
+게시글 생성
+    ↓
+전체 조회
+    ↓
+단건 조회
+    ↓
+게시글 수정
+    ↓
+게시글 삭제
+```
+
+추가로 아래 상황도 확인해보세요.
+
+- 존재하지 않는 id로 단건 조회
+- 존재하지 않는 id로 수정
+- 존재하지 않는 id로 삭제
+- 서버를 재시작한 뒤에도 DB에 저장된 데이터가 유지되는지 확인
+
+---
+
+## 7. README 필수 내용
+
+제출 Repository의 README에는 다음 내용을 포함해주세요.
+
+- 사용한 언어 / Java / Spring Boot 버전
+- 사용한 DB 종류
+- 프로젝트 실행 방법
+- DB 실행 또는 연결 방법
+- 구현한 API와 기능
+- 진행한 Challenge (있는 경우)
+- 구현하면서 고민했거나 어려웠던 점
+
+---
+
+## 8. 참고
+
+과제를 완성하지 못해도 괜찮습니다.  
+구현 중 막힌 부분이 있다면 현재까지 작성한 코드로 제출해도 됩니다.
+
+이번 과제에서는 단순히 JPA 코드를 따라 치는 것보다,
+
+**기존 메모리 저장 방식 → DB 저장 방식으로 바꾸는 과정에서 구조가 어떻게 달라지는지 이해하는 것**
+
+을 중요하게 생각합니다.
+
+궁금하거나 구현 중 막히는 부분은 자유롭게 질문해주세요!
+
+</details>
+</li>
+</ul>
+
+</details>
+
 </li>
 </ul>
 
