@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.gdgoc.study.domain.InvalidPostException;
 import com.example.gdgoc.study.domain.Post;
 import com.example.gdgoc.study.domain.PostNotFoundException;
 import com.example.gdgoc.study.repository.PostRepository;
@@ -44,6 +46,13 @@ class PostServiceTests {
   }
 
   @Test
+  void createPostRejectsBlankFieldsBeforeSaving() {
+    assertThrows(InvalidPostException.class, () -> service.createPost(" ", "내용"));
+    assertThrows(InvalidPostException.class, () -> service.createPost("제목", null));
+    verify(postRepository, never()).save(any(Post.class));
+  }
+
+  @Test
   void getPostsReturnsRepositoryResults() {
     List<Post> posts = List.of(new Post("제목", "내용"));
     when(postRepository.findAll()).thenReturn(posts);
@@ -63,6 +72,18 @@ class PostServiceTests {
     assertEquals("수정 제목", updatedPost.getTitle());
     assertEquals("수정 내용", updatedPost.getContent());
     verify(postRepository).save(existingPost);
+  }
+
+  @Test
+  void updatePostRejectsBlankFieldsWithoutMutatingOrSaving() {
+    Post existingPost = new Post("이전 제목", "이전 내용");
+    when(postRepository.findById(1L)).thenReturn(Optional.of(existingPost));
+
+    assertThrows(InvalidPostException.class, () -> service.updatePost(1L, "제목", "  "));
+
+    assertEquals("이전 제목", existingPost.getTitle());
+    assertEquals("이전 내용", existingPost.getContent());
+    verify(postRepository, never()).save(any(Post.class));
   }
 
   @Test

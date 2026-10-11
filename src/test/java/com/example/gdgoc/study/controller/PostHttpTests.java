@@ -74,6 +74,40 @@ class PostHttpTests {
     }
   }
 
+  @Test
+  void rejectsBlankPostFieldsOnCreateAndUpdate() throws Exception {
+    HttpResponse<String> blankTitle =
+        request("POST", "/posts", "{\"title\":\" \",\"content\":\"내용\"}");
+    assertEquals(400, blankTitle.statusCode());
+    assertEquals("title must not be blank", blankTitle.body());
+
+    HttpResponse<String> missingContent = request("POST", "/posts", "{\"title\":\"제목\"}");
+    assertEquals(400, missingContent.statusCode());
+    assertEquals("content must not be blank", missingContent.body());
+    assertJson(request("GET", "/posts"), 200, "[]");
+
+    HttpResponse<String> created =
+        request("POST", "/posts", "{\"title\":\"제목\",\"content\":\"내용\"}");
+    int id = new JSONObject(created.body()).getInt("id");
+
+    HttpResponse<String> blankContent =
+        request("PUT", "/posts/" + id, "{\"title\":\"새 제목\",\"content\":\"  \"}");
+    assertEquals(400, blankContent.statusCode());
+    assertEquals("content must not be blank", blankContent.body());
+    assertJson(
+        request("GET", "/posts/" + id),
+        200,
+        "{\"id\":%d,\"title\":\"제목\",\"content\":\"내용\"}".formatted(id));
+
+    HttpResponse<String> nullTitle =
+        request("PUT", "/posts/" + id, "{\"title\":null,\"content\":\"새 내용\"}");
+    assertEquals(400, nullTitle.statusCode());
+    assertEquals("title must not be blank", nullTitle.body());
+
+    assertEquals(204, request("DELETE", "/posts/" + id).statusCode());
+    assertJson(request("GET", "/posts"), 200, "[]");
+  }
+
   private HttpResponse<String> request(String method, String path) throws Exception {
     return request(method, path, null);
   }

@@ -17,6 +17,7 @@ public class Post {
   protected Post() {}
 
   public Post(String title, String content) {
+    validate(title, content);
     this.title = title;
     this.content = content;
   }
@@ -34,7 +35,17 @@ public class Post {
   }
 
   public void update(String title, String content) {
+    validate(title, content);
     this.title = title;
     this.content = content;
+  }
+
+  private static void validate(String title, String content) {
+    if (title == null || title.isBlank()) {
+      throw new InvalidPostException("title must not be blank");
+    }
+    if (content == null || content.isBlank()) {
+      throw new InvalidPostException("content must not be blank");
+    }
   }
 }
